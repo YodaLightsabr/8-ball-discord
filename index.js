@@ -33,6 +33,21 @@ client.once('ready', () => {
     success(`Discord.js logged in as ${c(client.user.tag)}`);
 });
 
+function hslToHex(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function color () {
+    return hslToHex(Math.random() * 360, 70, 60);
+}
+
 function prompt (question) {
     return `Maurice the Omnisicient 8-ball responds to questions; although it sometimes answers like a standard 8-ball, its responses are often remarkably profound and detailed. Some examples are as follows:
 
@@ -100,13 +115,24 @@ async function eightBall (question) {
     return await response.json();
 }
 
-eightBall('Will I ever find happiness?').then(info);
-
 client.on('messageCreate', async (message) => {
-    if (message.isMemberMentioned(client.user)) {
+    if (message.content.includes('<@!1040344125976883261>') || message.content.includes('<@1040344125976883261>')) {
         const question = message.content.replace(/<@!?[0-9]+>/, '').trim();
         const response = await eightBall(question);
-        message.reply(response.completions[0].data.text);
+        message.reply(response?.completions?.[0]?.data?.text || { embeds: [
+            new Discord.EmbedBuilder()
+                .setColor(color())
+                .setTitle('Oops!')
+                .setDescription(`Something went wrong. Here's what AI21 returned:
+\`\`\`json
+${JSON.stringify(response, null, 4)}
+\`\`\`
+
+Prompt:
+\`\`\`
+${question}
+\`\`\``)
+        ] });
     }  
 });
 
