@@ -9,3 +9,6 @@ build
 htmlcov
 
 keys.txt
+
+*.env*
+node_modules
